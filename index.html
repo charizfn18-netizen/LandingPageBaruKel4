@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Hub</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="navbar">
+      <div class="navbar__brand">
+        <div class="brand__logo">PH</div>
+        <div>
+          <h1>Portfolio Hub</h1>
+          <p>Gateway portofolio modern</p>
+        </div>
+      </div>
+      <nav class="navbar__links" id="websiteList"></nav>
+    </header>
+
+    <main class="main-container">
+      <section class="hero-card">
+        <div class="hero-card__content">
+          <h2>Selamat datang di Portfolio Hub</h2>
+          <p>
+            Temukan dan preview portofolio dari Bunga, Diyah, dan Chariz.
+            Tambahkan website baru untuk memperluas koleksi.
+          </p>
+        </div>
+        <div class="hero-card__actions">
+          <button class="button button--primary" id="openAddForm">
+            Tambah Website Baru
+          </button>
+        </div>
+      </section>
+
+      <section class="form-card" id="addWebsiteSection">
+        <h3>Tambah Website Portofolio</h3>
+        <form id="websiteForm">
+          <label>
+            Nama website
+            <input
+              type="text"
+              id="siteName"
+              placeholder="Contoh: Nizar"
+              required
+            />
+          </label>
+          <label>
+            Link website
+            <input
+              type="url"
+              id="siteLink"
+              placeholder="https://example.com"
+              required
+            />
+          </label>
+          <button class="button button--secondary" type="submit">Tambah</button>
+        </form>
+        <p class="hint">Data disimpan di browser menggunakan localStorage.</p>
+      </section>
+    </main>
+
+    <div class="modal-backdrop hidden" id="modalBackdrop"></div>
+    <div
+      class="modal hidden"
+      id="previewModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
+      <div class="modal__header">
+        <div class="modal__header-content">
+          <h2 id="modalTitle">Preview Website</h2>
+          <p id="modalSubtitle">Tampilan penuh di dalam portal</p>
+        </div>
+        <button class="modal__close" id="closeModal" aria-label="Tutup">
+          ×
+        </button>
+      </div>
+      <div class="modal__body">
+        <div class="modal__info">
+          <span class="chip" id="modalSiteName">Nama</span>
+          <a
+            href="#"
+            class="button button--primary button--inline"
+            id="visitSiteBtn"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Kunjungi Website</a
+          >
+        </div>
+        <div class="iframe-container" id="iframeContainer">
+          <iframe
+            id="sitePreview"
+            title="Preview website"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            src="about:blank"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
