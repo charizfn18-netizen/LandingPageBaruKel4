@@ -22,36 +22,86 @@ const defaultWebsites = [
     name: "Chariz",
     url: "https://charizfn18-netizen.github.io/PortofolioNizar/",
   },
+  {
+    name: "Denis",
+    url: "https://denishlutfian2008-beep.github.io/portofolio-web/",
+  },
 ];
 
-// Load websites dari localStorage jika ada, atau gunakan daftar default.
+function normalizeWebsiteName(name) {
+  return String(name).trim().toLowerCase();
+}
+
+function deduplicateWebsites(websites) {
+  const seen = new Set();
+  return websites.filter((site) => {
+    const key = normalizeWebsiteName(site.name);
+    if (!key || !site.url) {
+      return false;
+    }
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+function mergeDefaultWebsites(existingWebsites) {
+  const normalizedExisting = new Set(
+    existingWebsites.map((site) => normalizeWebsiteName(site.name)),
+  );
+  const merged = [...existingWebsites];
+
+  defaultWebsites.forEach((defaultSite) => {
+    const defaultName = normalizeWebsiteName(defaultSite.name);
+    if (!normalizedExisting.has(defaultName)) {
+      merged.push(defaultSite);
+      normalizedExisting.add(defaultName);
+    }
+  });
+
+  return merged;
+}
+
 function loadWebsites() {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultWebsites));
-    return defaultWebsites;
+    saveWebsites(defaultWebsites);
+    return [...defaultWebsites];
   }
 
   try {
     const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) ? parsed : defaultWebsites;
+    if (!Array.isArray(parsed)) {
+      saveWebsites(defaultWebsites);
+      return [...defaultWebsites];
+    }
+
+    const cleaned = deduplicateWebsites(parsed);
+    const merged = mergeDefaultWebsites(cleaned);
+
+    if (merged.length !== cleaned.length) {
+      saveWebsites(merged);
+    }
+
+    return merged;
   } catch (error) {
     console.warn("Gagal memuat data localStorage, gunakan default.", error);
-    return defaultWebsites;
+    saveWebsites(defaultWebsites);
+    return [...defaultWebsites];
   }
 }
 
-// Simpan daftar website ke localStorage.
 function saveWebsites(websites) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(websites));
 }
 
-// Buat elemen navbar untuk setiap situs.
 function renderWebsiteLinks() {
   websiteListEl.innerHTML = "";
   const websites = loadWebsites();
 
-  websites.forEach((site, index) => {
+  websites.forEach((site) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "navbar__link";
@@ -61,23 +111,18 @@ function renderWebsiteLinks() {
   });
 }
 
-// Tampilkan popup dengan preview website.
 function openPreview(site) {
   modalSiteName.textContent = site.name;
   modalTitle.textContent = `Preview ${site.name}`;
   modalSubtitle.textContent = `Menampilkan ${site.name} dalam mode preview.`;
   visitSiteBtn.href = site.url;
   visitSiteBtn.textContent = "Kunjungi Website";
-
-  // Pastikan URL valid dan aman untuk dipasang di iframe.
   sitePreview.src = site.url;
 
   previewModal.classList.add("show-modal");
   previewModal.classList.remove("hidden");
   modalBackdrop.classList.add("show-backdrop");
   modalBackdrop.classList.remove("hidden");
-
-  // Pastikan navbar tetap terlihat di atas popup.
   previewModal.style.zIndex = 60;
 }
 
@@ -89,9 +134,8 @@ function closePreview() {
   sitePreview.src = "about:blank";
 }
 
-// Validasi URL sederhana supaya hanya menerima protokol yang aman.
 function normalizeUrl(value) {
-  const trimmed = value.trim();
+  const trimmed = String(value).trim();
   if (/^https?:\/\//i.test(trimmed)) {
     return trimmed;
   }
@@ -110,7 +154,7 @@ websiteForm.addEventListener("submit", (event) => {
 
   const websites = loadWebsites();
   websites.push({ name, url });
-  saveWebsites(websites);
+  saveWebsites(deduplicateWebsites(websites));
   renderWebsiteLinks();
 
   siteNameInput.value = "";
@@ -118,22 +162,17 @@ websiteForm.addEventListener("submit", (event) => {
   siteNameInput.focus();
 });
 
-// Tombol tutup modal dan backdrop.
 closeModalBtn.addEventListener("click", closePreview);
 modalBackdrop.addEventListener("click", closePreview);
-
-// Tombol buka form pada hero card.
 openAddFormBtn.addEventListener("click", () => {
   addWebsiteSection.scrollIntoView({ behavior: "smooth", block: "center" });
   siteNameInput.focus();
 });
 
-// Tombol Esc menutup popup.
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && previewModal.classList.contains("show-modal")) {
     closePreview();
   }
 });
 
-// Inisialisasi render pertama kali.
 renderWebsiteLinks();
